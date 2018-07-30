@@ -1,0 +1,24 @@
+#PlaceholderAPI configuration file
+version: 2
+
+#Sets the minimal delay between separate updates of a placeholder (in milliseconds).
+min_update_interval: 500 # 0.5 seconds
+
+#Sets the minimal delay between separate updates of an async placeholder (in milliseconds). Async placeholders usually processes some expensive operations and shouldn't be processed too often
+min_async_update_interval: 10000 # 10 seconds
+
+#format for date placeholder
+date_format: "yyyy-MM-dd"
+
+#format for time placeholder
+time_format: "HH:mm:ss"
+
+boolean_format:
+  true_format: "yes"
+  false_format: "no"
+
+#separator to format arrays. So list of players will be formatted like "player1, player2, player3"
+array_format: ", "
+
+#number of digits displayed
+coordinates_accuracy: 2

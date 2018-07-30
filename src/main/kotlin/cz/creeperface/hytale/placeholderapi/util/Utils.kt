@@ -1,0 +1,68 @@
+package cz.creeperface.hytale.placeholderapi.util
+
+import cz.creeperface.hytale.placeholderapi.PlaceholderAPIIml
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.math.pow
+import kotlin.math.roundToInt
+import kotlin.reflect.KClass
+import kotlin.reflect.full.superclasses
+
+/**
+ * @author CreeperFace
+ */
+
+fun String.trimSides(startOffset: Int, endOffset: Int) = this.substring(startOffset, length - endOffset)
+
+fun <T : Number> T.round(accuracy: Int = 2): T {
+    require(accuracy >= 0) { "accuracy: $accuracy" }
+
+    val i = 10.toDouble().pow(accuracy.toDouble())
+
+    @Suppress("UNCHECKED_CAST")
+    return ((this.toDouble() * i).roundToInt() / i) as T
+}
+
+fun Long.formatAsTime(format: String): String {
+    return SimpleDateFormat(format).format(Date(this))
+}
+
+fun Long.bytes2MB() = this / 1024.0 / 1024.0
+
+fun Boolean.toFormatString(): String {
+    val conf = PlaceholderAPIIml.instance.configuration
+
+    return if (this) conf.booleanTrueFormat else conf.booleanFalseFormat
+}
+
+fun Date.toFormatString(): String {
+    return SimpleDateFormat(PlaceholderAPIIml.instance.configuration.dateFormat).format(this)
+}
+
+fun Any.toFormattedString(): String = when (this) {
+    is Boolean -> toFormatString()
+    is Date -> toFormatString()
+    else -> toString()
+}
+
+fun KClass<*>.nestedSuperClass(clazz: KClass<*>, level: Int = 0): Int {
+    if (this == clazz) {
+        return level
+    }
+
+    if (this.superclasses.isEmpty()) {
+        return -1
+    }
+
+    var minLevel = Int.MAX_VALUE
+
+    this.superclasses.forEach { superClass ->
+        val superLevel = superClass.nestedSuperClass(clazz, level + 1)
+
+        if (superLevel in 0 until minLevel) {
+            minLevel = superLevel
+        }
+    }
+
+    return minLevel
+}

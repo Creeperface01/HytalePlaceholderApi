@@ -1,0 +1,18 @@
+{
+  "Group": "CreeperFace",
+  "Name": "PlaceholderAPI",
+  "Version": "1.0.0",
+  "Description": "Unified API for placeholders",
+  "Authors": [
+    {
+      "Name": "CreeperFace"
+    }
+  ],
+  "Website": "${website}",
+  "ServerVersion": "*",
+  "Dependencies": {},
+  "OptionalDependencies": {},
+  "DisabledByDefault": false,
+  "Main": "cz.creeperface.hytale.PlaceholderAPI",
+  "IncludesAssetPack": false
+}
