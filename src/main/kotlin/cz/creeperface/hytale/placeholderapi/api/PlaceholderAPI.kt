@@ -1,11 +1,12 @@
 package cz.creeperface.hytale.placeholderapi.api
 
+import com.hypixel.hytale.server.core.entity.entities.Player
+import com.hypixel.hytale.server.core.universe.PlayerRef
 import cz.creeperface.hytale.placeholderapi.PlaceholderAPIIml
 import cz.creeperface.hytale.placeholderapi.api.Placeholder.VisitorEntry
 import cz.creeperface.hytale.placeholderapi.api.scope.GlobalScope
 import cz.creeperface.hytale.placeholderapi.api.scope.Scope
 import cz.creeperface.hytale.placeholderapi.api.util.*
-import com.hypixel.hytale.server.core.entity.entities.Player
 import java.util.*
 import java.util.function.Function
 import kotlin.reflect.KClass
@@ -52,24 +53,83 @@ abstract class PlaceholderAPI internal constructor() {
 
     fun getValue(key: String) = getValue(key, null)
 
-    fun getValue(key: String, visitor: Player?) = getValue(key, visitor, key)
+    fun getValue(key: String, visitor: PlayerRef?) = getValue(key, visitor, key)
+
+    fun getValue(key: String, visitor: Player): String {
+        val ref = visitor.reference
+        val player = ref?.store?.getComponent(ref, PlayerRef.getComponentType())
+
+        return getValue(
+            key,
+            player,
+            key,
+            PlaceholderParameters.EMPTY
+        )
+    }
 
     fun getValue(
             key: String,
-            visitor: Player? = null,
+            visitor: PlayerRef? = null,
             defaultValue: String? = key
     ) = getValue(key, visitor, defaultValue, PlaceholderParameters.EMPTY)
 
     fun getValue(
+        key: String,
+        visitor: Player,
+        defaultValue: String? = key
+    ): String {
+        val ref = visitor.reference
+        val player = ref?.store?.getComponent(ref, PlayerRef.getComponentType())
+
+        return getValue(
+            key,
+            player,
+            defaultValue,
+            PlaceholderParameters.EMPTY
+        )
+    }
+
+    fun getValue(
             key: String,
-            visitor: Player? = null,
+            visitor: PlayerRef? = null,
             defaultValue: String? = key,
             params: PlaceholderParameters = PlaceholderParameters.EMPTY
     ) = getValue(key, visitor, defaultValue, params, GlobalScope.defaultContext)
 
+    fun getValue(
+        key: String,
+        visitor: Player,
+        defaultValue: String? = key,
+        params: PlaceholderParameters = PlaceholderParameters.EMPTY
+    ): String {
+        val ref = visitor.reference
+        val player = ref?.store?.getComponent(ref, PlayerRef.getComponentType())
+
+        return getValue(key, player, defaultValue, params, GlobalScope.defaultContext)
+    }
+
+    fun getValue(
+        key: String,
+        visitor: Player,
+        defaultValue: String? = key,
+        params: PlaceholderParameters = PlaceholderParameters.EMPTY,
+        vararg contexts: AnyContext = arrayOf(GlobalScope.defaultContext)
+    ): String {
+        val ref = visitor.reference
+        val player = ref?.store?.getComponent(ref, PlayerRef.getComponentType())
+
+        return getValue(
+            key,
+            player,
+            defaultValue,
+            params,
+            *contexts
+        )
+    }
+
     abstract fun getValue(
         key: String,
-        visitor: Player? = null,
+        visitor: PlayerRef? = null,
         defaultValue: String? = key,
         params: PlaceholderParameters = PlaceholderParameters.EMPTY,
         vararg contexts: AnyContext = arrayOf(GlobalScope.defaultContext)
@@ -77,26 +137,36 @@ abstract class PlaceholderAPI internal constructor() {
 
     fun updatePlaceholder(key: String) = updatePlaceholder(key, null)
 
-    fun updatePlaceholder(key: String, visitor: Player?) = updatePlaceholder(key, visitor, GlobalScope.defaultContext)
+    fun updatePlaceholder(key: String, visitor: PlayerRef?) = updatePlaceholder(key, visitor, GlobalScope.defaultContext)
 
-    abstract fun updatePlaceholder(key: String, visitor: Player?, context: AnyContext)
+    abstract fun updatePlaceholder(key: String, visitor: PlayerRef?, context: AnyContext)
 
     fun translateString(input: String) = translateString(input, null)
 
+    fun translateString(input: String, visitor: Player): String {
+        val ref = visitor.reference
+        val player = ref?.store?.getComponent(ref, PlayerRef.getComponentType())
+
+        return translateString(
+            input,
+            player
+        )
+    }
+
     fun translateString(
         input: String,
-        visitor: Player? = null
+        visitor: PlayerRef? = null
     ) = translateString(input, visitor, input.matchPlaceholders(), GlobalScope.defaultContext)
 
     fun translateString(
         input: String,
-        visitor: Player? = null,
+        visitor: PlayerRef? = null,
         vararg contexts: AnyContext = arrayOf(GlobalScope.defaultContext)
     ) = translateString(input, visitor, input.matchPlaceholders(), *contexts)
 
     abstract fun translateString(
         input: String,
-        visitor: Player?,
+        visitor: PlayerRef?,
         matched: Collection<MatchedGroup>,
         vararg contexts: AnyContext = arrayOf(GlobalScope.defaultContext)
     ): String

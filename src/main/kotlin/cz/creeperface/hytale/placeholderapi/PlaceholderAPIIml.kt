@@ -17,6 +17,7 @@ import com.hypixel.hytale.server.core.HytaleServer
 import com.hypixel.hytale.server.core.asset.type.item.config.Item
 import com.hypixel.hytale.server.core.command.system.CommandManager
 import com.hypixel.hytale.server.core.entity.entities.Player
+import com.hypixel.hytale.server.core.universe.PlayerRef
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.jvm.internal.Ref
@@ -171,7 +172,7 @@ class PlaceholderAPIIml private constructor(
     @Suppress("UNCHECKED_CAST")
     override fun getValue(
         key: String,
-        visitor: Player?,
+        visitor: PlayerRef?,
         defaultValue: String?,
         params: PlaceholderParameters,
         vararg contexts: AnyContext
@@ -193,7 +194,7 @@ class PlaceholderAPIIml private constructor(
 
     override fun translateString(
         input: String,
-        visitor: Player?,
+        visitor: PlayerRef?,
         matched: Collection<MatchedGroup>,
         vararg contexts: AnyContext
     ): String {
@@ -273,7 +274,7 @@ class PlaceholderAPIIml private constructor(
         return null
     }
 
-    override fun updatePlaceholder(key: String, visitor: Player?, context: AnyContext) {
+    override fun updatePlaceholder(key: String, visitor: PlayerRef?, context: AnyContext) {
         getPlaceholder(key)?.forceUpdate(player = visitor, context = context)
     }
 
@@ -361,8 +362,10 @@ class PlaceholderAPIIml private constructor(
         registerFormatter(Array<Any?>::class) {
             it.joinToString(configuration.arraySeparator)
         }
-        registerFormatter(Player::class) {
-            it.displayName
+        registerFormatter(PlayerRef::class) {
+            it.reference?.let { ref ->
+                ref.store.getComponent(ref, Player.getComponentType())?.displayName
+            } ?: it.username
         }
         registerFormatter(Item::class) {
             it.blockId

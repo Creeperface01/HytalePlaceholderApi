@@ -1,8 +1,8 @@
 package cz.creeperface.hytale.placeholderapi.placeholder
 
+import com.hypixel.hytale.server.core.universe.PlayerRef
 import cz.creeperface.hytale.placeholderapi.api.PlaceholderParameters
 import cz.creeperface.hytale.placeholderapi.api.util.*
-import com.hypixel.hytale.server.core.entity.entities.Player
 import kotlin.reflect.KClass
 
 /**
@@ -30,11 +30,11 @@ open class StaticPlaceHolder<T : Any>(
         loader
 ) {
 
-    override fun loadValue(parameters: PlaceholderParameters, context: AnyContext, player: Player?): T? {
+    override fun loadValue(parameters: PlaceholderParameters, context: AnyContext, player: PlayerRef?): T? {
         return loader(ValueEntry(null, parameters, context))
     }
 
-    override fun forceUpdate(parameters: PlaceholderParameters, context: AnyContext, player: Player?): String {
+    override fun forceUpdate(parameters: PlaceholderParameters, context: AnyContext, player: PlayerRef?): String {
         checkForUpdate(parameters)
 
         return safeValue()

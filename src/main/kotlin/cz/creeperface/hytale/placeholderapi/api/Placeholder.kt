@@ -5,8 +5,8 @@ import cz.creeperface.hytale.placeholderapi.api.scope.Scope
 import cz.creeperface.hytale.placeholderapi.api.util.AnyContext
 import cz.creeperface.hytale.placeholderapi.api.util.AnyScope
 import cz.creeperface.hytale.placeholderapi.api.util.PFormatter
-import com.hypixel.hytale.server.core.entity.entities.Player
 import com.hypixel.hytale.server.core.plugin.JavaPlugin
+import com.hypixel.hytale.server.core.universe.PlayerRef
 import kotlin.reflect.KClass
 
 /**
@@ -55,17 +55,17 @@ interface Placeholder<T : Any> {
 
     fun getValue() = getValue(PlaceholderParameters.EMPTY, scope.defaultContext, null)
 
-    fun getValue(player: Player? = null) = getValue(PlaceholderParameters.EMPTY, scope.defaultContext, player)
+    fun getValue(player: PlayerRef? = null) = getValue(PlaceholderParameters.EMPTY, scope.defaultContext, player)
 
-    fun getValue(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: AnyContext = scope.defaultContext, player: Player? = null): String
+    fun getValue(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: AnyContext = scope.defaultContext, player: PlayerRef? = null): String
 
-    fun getDirectValue(player: Player? = null) = getDirectValue(PlaceholderParameters.EMPTY, player)
+    fun getDirectValue(player: PlayerRef? = null) = getDirectValue(PlaceholderParameters.EMPTY, player)
 
-    fun getDirectValue(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, player: Player? = null) = getDirectValue(parameters, scope.defaultContext, player)
+    fun getDirectValue(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, player: PlayerRef? = null) = getDirectValue(parameters, scope.defaultContext, player)
 
-    fun getDirectValue(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: AnyContext = scope.defaultContext, player: Player? = null): T?
+    fun getDirectValue(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: AnyContext = scope.defaultContext, player: PlayerRef? = null): T?
 
-    fun forceUpdate(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: AnyContext = scope.defaultContext, player: Player? = null): String
+    fun forceUpdate(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: AnyContext = scope.defaultContext, player: PlayerRef? = null): String
 
     fun addListener(plugin: JavaPlugin, listener: PlaceholderChangeListener<T>)
 
@@ -75,17 +75,17 @@ interface Placeholder<T : Any> {
 
     fun isVisitorSensitive() = false
 
-    fun updateOrExecute(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: AnyContext = scope.defaultContext, player: Player? = null, action: Runnable)
+    fun updateOrExecute(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: AnyContext = scope.defaultContext, player: PlayerRef? = null, action: Runnable)
 
     @Suppress("UNCHECKED_CAST")
     class VisitorEntry<T, ST, S : Scope<ST, S>>(
-            override val player: Player,
+            override val player: PlayerRef,
             parameters: PlaceholderParameters,
             context: AnyContext
     ) : Entry<T, ST, S>(player, parameters, context as Scope<ST, S>.Context)
 
     open class Entry<T, ST, S : Scope<ST, S>>(
-            open val player: Player?,
+            open val player: PlayerRef?,
             val parameters: PlaceholderParameters,
             val context: Scope<ST, S>.Context
     ) {

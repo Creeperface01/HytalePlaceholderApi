@@ -8,6 +8,7 @@ import com.hypixel.hytale.server.core.HytaleServer
 import com.hypixel.hytale.server.core.entity.entities.Player
 import com.hypixel.hytale.server.core.event.events.player.PlayerChatEvent
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent
+import com.hypixel.hytale.server.core.universe.PlayerRef
 import com.hypixel.hytale.server.core.universe.Universe
 import java.time.Duration
 import java.util.*
@@ -32,14 +33,22 @@ val PlayerChatEvent.context: Scope<PlayerChatEvent, ChatScope>.Context
 internal fun registerDefaultPlaceholders(api: PlaceholderAPIIml) {
     with(api) {
         build("player_display_name") {
-            visitorLoader { player.displayName }
+            visitorLoader {
+                player.reference?.let { ref ->
+                    ref.store.getComponent(ref, Player.getComponentType())?.displayName
+                }
+            }
         }
 
         build("player_gamemode") {
-            visitorLoader { player.gameMode.toFormattedString() }
+            visitorLoader {
+                player.reference?.let { ref ->
+                    ref.store.getComponent(ref, Player.getComponentType())?.gameMode?.toFormattedString()
+                }
+            }
         }
 
-        fun getPlayerTransform(player: Player): TransformComponent? {
+        fun getPlayerTransform(player: PlayerRef): TransformComponent? {
             val ref = player.reference ?: return null
             return ref.store.getComponent(ref, TransformComponent.getComponentType())
         }
@@ -88,7 +97,11 @@ internal fun registerDefaultPlaceholders(api: PlaceholderAPIIml) {
         }
 
         build("player_item_in_hand") {
-            visitorLoader { player.inventory?.itemInHand?.itemId }
+            visitorLoader {
+                player.reference?.let { ref ->
+                    ref.store.getComponent(ref, Player.getComponentType())?.inventory?.itemInHand?.itemId
+                }
+            }
         }
 
         val runtime = Runtime.getRuntime()

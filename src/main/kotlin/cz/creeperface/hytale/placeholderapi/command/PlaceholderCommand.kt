@@ -24,10 +24,16 @@ class PlaceholderCommand : CommandBase(
     override fun executeSync(ctx: CommandContext) {
         val message = textArgument.get(ctx)
 
-        val player = ctx.sender() as? Player
+        val sender = ctx.sender()
 
-        val value = PlaceholderAPI.getInstance().translateString(message, player)
-
-        ctx.sender().sendMessage(Message.raw("value: $value"))
+        if (sender is Player) {
+            sender.world?.execute {
+                val value = PlaceholderAPI.getInstance().translateString(message, sender)
+                sender.sendMessage(Message.raw("value: $value"))
+            }
+        } else {
+            val value = PlaceholderAPI.getInstance().translateString(message, null)
+            sender.sendMessage(Message.raw("value: $value"))
+        }
     }
 }

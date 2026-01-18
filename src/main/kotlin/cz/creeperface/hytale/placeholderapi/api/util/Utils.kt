@@ -8,7 +8,7 @@ import cz.creeperface.hytale.placeholderapi.api.PlaceholderParameters
 import cz.creeperface.hytale.placeholderapi.api.scope.GlobalScope
 import cz.creeperface.hytale.placeholderapi.api.scope.Scope
 import cz.creeperface.hytale.placeholderapi.util.Parser
-import com.hypixel.hytale.server.core.entity.entities.Player
+import com.hypixel.hytale.server.core.universe.PlayerRef
 import kotlin.reflect.KClass
 
 /**
@@ -42,6 +42,6 @@ inline fun <T> assignIfNull(value: T?, newValue: T?): T? {
 }
 
 fun String.translatePlaceholders(
-        visitor: Player? = null,
+        visitor: PlayerRef? = null,
         vararg contexts: AnyContext = arrayOf(GlobalScope.defaultContext)
 ) = PlaceholderAPI.getInstance().translateString(this, visitor, *contexts)

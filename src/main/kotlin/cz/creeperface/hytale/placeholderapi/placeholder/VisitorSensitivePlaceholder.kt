@@ -1,8 +1,8 @@
 package cz.creeperface.hytale.placeholderapi.placeholder
 
+import com.hypixel.hytale.server.core.universe.PlayerRef
 import cz.creeperface.hytale.placeholderapi.api.PlaceholderParameters
 import cz.creeperface.hytale.placeholderapi.api.util.*
-import com.hypixel.hytale.server.core.entity.entities.Player
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -31,9 +31,9 @@ open class VisitorSensitivePlaceholder<T : Any>(
         loader
 ) {
 
-    private val cache = WeakHashMap<Player, Entry<T>>()
+    private val cache = WeakHashMap<PlayerRef, Entry<T>>()
 
-    override fun getValue(parameters: PlaceholderParameters, context: AnyContext, player: Player?): String {
+    override fun getValue(parameters: PlaceholderParameters, context: AnyContext, player: PlayerRef?): String {
         if (player == null)
             return name
 
@@ -58,7 +58,7 @@ open class VisitorSensitivePlaceholder<T : Any>(
         return safeValue()
     }
 
-    override fun updateOrExecute(parameters: PlaceholderParameters, context: AnyContext, player: Player?, action: Runnable) {
+    override fun updateOrExecute(parameters: PlaceholderParameters, context: AnyContext, player: PlayerRef?, action: Runnable) {
         var updated = false
 
         val cached = cache[player]
@@ -88,12 +88,12 @@ open class VisitorSensitivePlaceholder<T : Any>(
         }
     }
 
-    override fun loadValue(parameters: PlaceholderParameters, context: AnyContext, player: Player?) =
+    override fun loadValue(parameters: PlaceholderParameters, context: AnyContext, player: PlayerRef?) =
             if (player != null) loader(
                 AnyVisitorValueEntry(player, parameters, context)
             ) else null
 
-    override fun forceUpdate(parameters: PlaceholderParameters, context: AnyContext, player: Player?): String {
+    override fun forceUpdate(parameters: PlaceholderParameters, context: AnyContext, player: PlayerRef?): String {
         if (player == null)
             return name
 
@@ -106,7 +106,7 @@ open class VisitorSensitivePlaceholder<T : Any>(
         return safeValue()
     }
 
-    override fun checkValueUpdate(value: T?, newVal: T?, player: Player?): Boolean {
+    override fun checkValueUpdate(value: T?, newVal: T?, player: PlayerRef?): Boolean {
         if (player == null)
             return false
 

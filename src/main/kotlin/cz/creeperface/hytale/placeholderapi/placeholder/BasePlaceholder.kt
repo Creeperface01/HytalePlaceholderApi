@@ -7,8 +7,8 @@ import cz.creeperface.hytale.placeholderapi.api.event.PlaceholderUpdateEvent
 import cz.creeperface.hytale.placeholderapi.api.scope.GlobalScope
 import cz.creeperface.hytale.placeholderapi.api.util.*
 import com.hypixel.hytale.server.core.HytaleServer
-import com.hypixel.hytale.server.core.entity.entities.Player
 import com.hypixel.hytale.server.core.plugin.JavaPlugin
+import com.hypixel.hytale.server.core.universe.PlayerRef
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.reflect.KClass
@@ -59,14 +59,14 @@ abstract class BasePlaceholder<T : Any>(
         }
     }
 
-    override fun getValue(parameters: PlaceholderParameters, context: AnyContext, player: Player?): String {
+    override fun getValue(parameters: PlaceholderParameters, context: AnyContext, player: PlayerRef?): String {
         if (value == null || readyToUpdate()) {
             checkForUpdate(parameters, player = player, context = context)
         }
         return safeValue()
     }
 
-    override fun getDirectValue(parameters: PlaceholderParameters, context: AnyContext, player: Player?): T? {
+    override fun getDirectValue(parameters: PlaceholderParameters, context: AnyContext, player: PlayerRef?): T? {
         getValue(parameters, context, player)
 
         return value
@@ -75,7 +75,7 @@ abstract class BasePlaceholder<T : Any>(
     override fun updateOrExecute(
         parameters: PlaceholderParameters,
         context: AnyContext,
-        player: Player?,
+        player: PlayerRef?,
         action: Runnable
     ) {
         var updated = false
@@ -89,7 +89,7 @@ abstract class BasePlaceholder<T : Any>(
         }
     }
 
-    protected abstract fun loadValue(parameters: PlaceholderParameters, context: AnyContext, player: Player? = null): T?
+    protected abstract fun loadValue(parameters: PlaceholderParameters, context: AnyContext, player: PlayerRef? = null): T?
 
     protected fun safeValue() = value?.let { formatter(it) } ?: name
 
@@ -97,7 +97,7 @@ abstract class BasePlaceholder<T : Any>(
     protected fun checkForUpdate(
         parameters: PlaceholderParameters = PlaceholderParameters.EMPTY,
         context: AnyContext = scope.defaultContext,
-        player: Player? = null,
+        player: PlayerRef? = null,
         force: Boolean = false
     ): Boolean {
         if (!force && !readyToUpdate()) {
@@ -107,7 +107,7 @@ abstract class BasePlaceholder<T : Any>(
         return checkValueUpdate(value, loadValue(parameters, context, player), player)
     }
 
-    protected open fun checkValueUpdate(value: T?, newVal: T?, player: Player? = null): Boolean {
+    protected open fun checkValueUpdate(value: T?, newVal: T?, player: PlayerRef? = null): Boolean {
         if (!Objects.equals(value, newVal)) {
             HytaleServer.SCHEDULED_EXECUTOR.schedule({
                 run {
