@@ -6,16 +6,17 @@ import com.hypixel.hytale.server.core.plugin.JavaPluginInit
 /**
  * @author CreeperFace
  */
-class PlaceholderPlugin(init: JavaPluginInit) : JavaPlugin(init) {
+class PlaceholderApiPlugin(init: JavaPluginInit) : JavaPlugin(init) {
 
     private lateinit var api: PlaceholderAPIIml
 
+    private val config = withConfig("PlaceholderAPI", Configuration.CODEC)
+
     override fun setup() {
-        val cfg = withConfig("PlaceholderAPI", Configuration.CODEC)
-        cfg.save()
+        config.save()
 
         api = PlaceholderAPIIml.createInstance(
-            cfg.get(),
+            config.get(),
             logger
         )
         api.init()

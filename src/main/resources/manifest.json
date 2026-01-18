@@ -10,9 +10,11 @@
   ],
   "Website": "${website}",
   "ServerVersion": "*",
-  "Dependencies": {},
+  "Dependencies": {
+    "AmoAster:Kytale": ">=1.4"
+  },
   "OptionalDependencies": {},
   "DisabledByDefault": false,
-  "Main": "cz.creeperface.hytale.PlaceholderAPI",
+  "Main": "cz.creeperface.hytale.placeholderapi.PlaceholderApiPlugin",
   "IncludesAssetPack": false
 }

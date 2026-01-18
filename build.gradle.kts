@@ -4,7 +4,7 @@ plugins {
     id("maven-publish")
 }
 
-group = "com.creeperface.hytale.placeholderapi"
+group = "cz.creeperface.hytale.placeholderapi"
 version = "1.0"
 
 repositories {
