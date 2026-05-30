@@ -1,5 +1,6 @@
 package cz.creeperface.hytale.placeholderapi.placeholder
 
+import com.hypixel.hytale.server.core.Message
 import com.hypixel.hytale.server.core.universe.PlayerRef
 import cz.creeperface.hytale.placeholderapi.api.PlaceholderParameters
 import cz.creeperface.hytale.placeholderapi.api.util.*
@@ -34,7 +35,7 @@ open class StaticPlaceHolder<T : Any>(
         return loader(ValueEntry(null, parameters, context))
     }
 
-    override fun forceUpdate(parameters: PlaceholderParameters, context: AnyContext, player: PlayerRef?): String {
+    override fun forceUpdate(parameters: PlaceholderParameters, context: AnyContext, player: PlayerRef?): Message {
         checkForUpdate(parameters)
 
         return safeValue()

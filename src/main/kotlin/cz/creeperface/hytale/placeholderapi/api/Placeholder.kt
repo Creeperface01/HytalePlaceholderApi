@@ -1,12 +1,13 @@
 package cz.creeperface.hytale.placeholderapi.api
 
+import com.hypixel.hytale.server.core.Message
+import com.hypixel.hytale.server.core.plugin.JavaPlugin
+import com.hypixel.hytale.server.core.universe.PlayerRef
 import cz.creeperface.hytale.placeholderapi.api.event.PlaceholderChangeListener
 import cz.creeperface.hytale.placeholderapi.api.scope.Scope
 import cz.creeperface.hytale.placeholderapi.api.util.AnyContext
 import cz.creeperface.hytale.placeholderapi.api.util.AnyScope
 import cz.creeperface.hytale.placeholderapi.api.util.PFormatter
-import com.hypixel.hytale.server.core.plugin.JavaPlugin
-import com.hypixel.hytale.server.core.universe.PlayerRef
 import kotlin.reflect.KClass
 
 /**
@@ -57,7 +58,11 @@ interface Placeholder<T : Any> {
 
     fun getValue(player: PlayerRef? = null) = getValue(PlaceholderParameters.EMPTY, scope.defaultContext, player)
 
-    fun getValue(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: AnyContext = scope.defaultContext, player: PlayerRef? = null): String
+    fun getValue(
+        parameters: PlaceholderParameters = PlaceholderParameters.EMPTY,
+        context: AnyContext = scope.defaultContext,
+        player: PlayerRef? = null
+    ): Message
 
     fun getDirectValue(player: PlayerRef? = null) = getDirectValue(PlaceholderParameters.EMPTY, player)
 
@@ -65,7 +70,11 @@ interface Placeholder<T : Any> {
 
     fun getDirectValue(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: AnyContext = scope.defaultContext, player: PlayerRef? = null): T?
 
-    fun forceUpdate(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: AnyContext = scope.defaultContext, player: PlayerRef? = null): String
+    fun forceUpdate(
+        parameters: PlaceholderParameters = PlaceholderParameters.EMPTY,
+        context: AnyContext = scope.defaultContext,
+        player: PlayerRef? = null
+    ): Message
 
     fun addListener(plugin: JavaPlugin, listener: PlaceholderChangeListener<T>)
 

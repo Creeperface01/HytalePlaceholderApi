@@ -1,14 +1,15 @@
 package cz.creeperface.hytale.placeholderapi.placeholder
 
+import com.hypixel.hytale.server.core.HytaleServer
+import com.hypixel.hytale.server.core.Message
+import com.hypixel.hytale.server.core.plugin.JavaPlugin
+import com.hypixel.hytale.server.core.universe.PlayerRef
 import cz.creeperface.hytale.placeholderapi.api.Placeholder
 import cz.creeperface.hytale.placeholderapi.api.PlaceholderParameters
 import cz.creeperface.hytale.placeholderapi.api.event.PlaceholderChangeListener
 import cz.creeperface.hytale.placeholderapi.api.event.PlaceholderUpdateEvent
 import cz.creeperface.hytale.placeholderapi.api.scope.GlobalScope
 import cz.creeperface.hytale.placeholderapi.api.util.*
-import com.hypixel.hytale.server.core.HytaleServer
-import com.hypixel.hytale.server.core.plugin.JavaPlugin
-import com.hypixel.hytale.server.core.universe.PlayerRef
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.reflect.KClass
@@ -59,7 +60,7 @@ abstract class BasePlaceholder<T : Any>(
         }
     }
 
-    override fun getValue(parameters: PlaceholderParameters, context: AnyContext, player: PlayerRef?): String {
+    override fun getValue(parameters: PlaceholderParameters, context: AnyContext, player: PlayerRef?): Message {
         if (value == null || readyToUpdate()) {
             checkForUpdate(parameters, player = player, context = context)
         }
@@ -91,7 +92,7 @@ abstract class BasePlaceholder<T : Any>(
 
     protected abstract fun loadValue(parameters: PlaceholderParameters, context: AnyContext, player: PlayerRef? = null): T?
 
-    protected fun safeValue() = value?.let { formatter(it) } ?: name
+    protected fun safeValue() = value?.let { formatter(it) } ?: Message.raw(name)
 
     @JvmOverloads
     protected fun checkForUpdate(

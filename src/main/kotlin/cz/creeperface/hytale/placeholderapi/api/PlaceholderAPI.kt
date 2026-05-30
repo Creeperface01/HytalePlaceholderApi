@@ -1,5 +1,6 @@
 package cz.creeperface.hytale.placeholderapi.api
 
+import com.hypixel.hytale.server.core.Message
 import com.hypixel.hytale.server.core.entity.entities.Player
 import com.hypixel.hytale.server.core.universe.PlayerRef
 import cz.creeperface.hytale.placeholderapi.PlaceholderAPIIml
@@ -55,7 +56,7 @@ abstract class PlaceholderAPI internal constructor() {
 
     fun getValue(key: String, visitor: PlayerRef?) = getValue(key, visitor, key)
 
-    fun getValue(key: String, visitor: Player): String {
+    fun getValue(key: String, visitor: Player): Message {
         val ref = visitor.reference
         val player = ref?.store?.getComponent(ref, PlayerRef.getComponentType())
 
@@ -77,7 +78,7 @@ abstract class PlaceholderAPI internal constructor() {
         key: String,
         visitor: Player,
         defaultValue: String? = key
-    ): String {
+    ): Message {
         val ref = visitor.reference
         val player = ref?.store?.getComponent(ref, PlayerRef.getComponentType())
 
@@ -101,7 +102,7 @@ abstract class PlaceholderAPI internal constructor() {
         visitor: Player,
         defaultValue: String? = key,
         params: PlaceholderParameters = PlaceholderParameters.EMPTY
-    ): String {
+    ): Message {
         val ref = visitor.reference
         val player = ref?.store?.getComponent(ref, PlayerRef.getComponentType())
 
@@ -114,7 +115,7 @@ abstract class PlaceholderAPI internal constructor() {
         defaultValue: String? = key,
         params: PlaceholderParameters = PlaceholderParameters.EMPTY,
         vararg contexts: AnyContext = arrayOf(GlobalScope.defaultContext)
-    ): String {
+    ): Message {
         val ref = visitor.reference
         val player = ref?.store?.getComponent(ref, PlayerRef.getComponentType())
 
@@ -133,7 +134,7 @@ abstract class PlaceholderAPI internal constructor() {
         defaultValue: String? = key,
         params: PlaceholderParameters = PlaceholderParameters.EMPTY,
         vararg contexts: AnyContext = arrayOf(GlobalScope.defaultContext)
-    ): String
+    ): Message
 
     fun updatePlaceholder(key: String) = updatePlaceholder(key, null)
 
@@ -143,7 +144,7 @@ abstract class PlaceholderAPI internal constructor() {
 
     fun translateString(input: String) = translateString(input, null)
 
-    fun translateString(input: String, visitor: Player): String {
+    fun translateString(input: String, visitor: Player): Message {
         val ref = visitor.reference
         val player = ref?.store?.getComponent(ref, PlayerRef.getComponentType())
 
@@ -169,7 +170,20 @@ abstract class PlaceholderAPI internal constructor() {
         visitor: PlayerRef?,
         matched: Collection<MatchedGroup>,
         vararg contexts: AnyContext = arrayOf(GlobalScope.defaultContext)
-    ): String
+    ): Message
+
+    fun translateMessage(
+        input: String,
+        visitor: PlayerRef? = null,
+        vararg contexts: AnyContext = arrayOf(GlobalScope.defaultContext)
+    ) = translateMessage(input, visitor, input.matchPlaceholders(), *contexts)
+
+    abstract fun translateMessage(
+        input: String,
+        visitor: PlayerRef?,
+        matched: Collection<MatchedGroup>,
+        vararg contexts: AnyContext = arrayOf(GlobalScope.defaultContext)
+    ): Message
 
     fun findPlaceholders(input: String, scope: AnyScope = GlobalScope) =
         findPlaceholders(input.matchPlaceholders(), scope)
@@ -185,11 +199,18 @@ abstract class PlaceholderAPI internal constructor() {
 
     abstract fun formatDate(millis: Long): String
 
-    abstract fun formatObject(value: Any?): String
+    abstract fun formatObject(value: Any?): Message
 
-    abstract fun <T : Any> registerFormatter(clazz: KClass<T>, formatFun: (T) -> String)
+    abstract fun <T : Any> registerFormatter(clazz: KClass<T>, formatFun: (T) -> Message)
 
-    fun <T : Any> registerFormatter(clazz: Class<T>, formatFun: Function<T, String>) = registerFormatter(clazz.kotlin) { formatFun.apply(it) }
+    fun <T : Any> registerStringFormatter(clazz: KClass<T>, formatFun: (T) -> String) =
+        registerFormatter(clazz) { Message.raw(formatFun(it)) }
+
+    fun <T : Any> registerFormatter(clazz: Class<T>, formatFun: Function<T, Message>) =
+        registerFormatter(clazz.kotlin) { formatFun.apply(it) }
+
+    fun <T : Any> registerStringFormatter(clazz: Class<T>, formatFun: Function<T, String>) =
+        registerStringFormatter(clazz.kotlin) { formatFun.apply(it) }
 
     abstract fun getFormatter(clazz: KClass<*>): PFormatter
 

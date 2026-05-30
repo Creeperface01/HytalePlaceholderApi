@@ -1,11 +1,11 @@
 package cz.creeperface.hytale.placeholderapi.command
 
-import cz.creeperface.hytale.placeholderapi.api.PlaceholderAPI
 import com.hypixel.hytale.server.core.Message
 import com.hypixel.hytale.server.core.command.system.CommandContext
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase
 import com.hypixel.hytale.server.core.entity.entities.Player
+import cz.creeperface.hytale.placeholderapi.api.PlaceholderAPI
 
 /**
  * @author CreeperFace
@@ -29,11 +29,11 @@ class PlaceholderCommand : CommandBase(
         if (sender is Player) {
             sender.world?.execute {
                 val value = PlaceholderAPI.getInstance().translateString(message, sender)
-                sender.sendMessage(Message.raw("value: $value"))
+                sender.sendMessage(Message.join(Message.raw("value: "), value))
             }
         } else {
             val value = PlaceholderAPI.getInstance().translateString(message, null)
-            sender.sendMessage(Message.raw("value: $value"))
+            sender.sendMessage(Message.join(Message.raw("value: "), value))
         }
     }
 }

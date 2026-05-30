@@ -2,19 +2,20 @@
 
 package cz.creeperface.hytale.placeholderapi.api.util
 
+import com.hypixel.hytale.server.core.Message
+import com.hypixel.hytale.server.core.universe.PlayerRef
 import cz.creeperface.hytale.placeholderapi.api.Placeholder
 import cz.creeperface.hytale.placeholderapi.api.PlaceholderAPI
 import cz.creeperface.hytale.placeholderapi.api.PlaceholderParameters
 import cz.creeperface.hytale.placeholderapi.api.scope.GlobalScope
 import cz.creeperface.hytale.placeholderapi.api.scope.Scope
 import cz.creeperface.hytale.placeholderapi.util.Parser
-import com.hypixel.hytale.server.core.universe.PlayerRef
 import kotlin.reflect.KClass
 
 /**
  * @author CreeperFace
  */
-typealias PFormatter = (Any?) -> String
+typealias PFormatter = (Any?) -> Message
 
 typealias AnyScope = Scope<out Any?, *>
 typealias AnyScopeClass = KClass<out Scope<out Any?, *>>

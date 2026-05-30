@@ -1,5 +1,15 @@
 package cz.creeperface.hytale.placeholderapi
 
+import com.hypixel.hytale.logger.HytaleLogger
+import com.hypixel.hytale.protocol.BlockType
+import com.hypixel.hytale.server.core.HytaleServer
+import com.hypixel.hytale.server.core.Message
+import com.hypixel.hytale.server.core.asset.type.item.config.Item
+import com.hypixel.hytale.server.core.command.system.CommandManager
+import com.hypixel.hytale.server.core.modules.entity.component.DisplayNameComponent
+import com.hypixel.hytale.server.core.universe.PlayerRef
+import cz.creeperface.hytale.placeholderapi.api.MessageColor
+import cz.creeperface.hytale.placeholderapi.api.MessageStyle
 import cz.creeperface.hytale.placeholderapi.api.PlaceholderParameters
 import cz.creeperface.hytale.placeholderapi.api.event.PlaceholderAPIInitializeEvent
 import cz.creeperface.hytale.placeholderapi.api.scope.GlobalScope
@@ -11,13 +21,6 @@ import cz.creeperface.hytale.placeholderapi.placeholder.VisitorSensitivePlacehol
 import cz.creeperface.hytale.placeholderapi.util.formatAsTime
 import cz.creeperface.hytale.placeholderapi.util.nestedSuperClass
 import cz.creeperface.hytale.placeholderapi.util.toFormatString
-import com.hypixel.hytale.logger.HytaleLogger
-import com.hypixel.hytale.protocol.BlockType
-import com.hypixel.hytale.server.core.HytaleServer
-import com.hypixel.hytale.server.core.asset.type.item.config.Item
-import com.hypixel.hytale.server.core.command.system.CommandManager
-import com.hypixel.hytale.server.core.entity.entities.Player
-import com.hypixel.hytale.server.core.universe.PlayerRef
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.jvm.internal.Ref
@@ -169,26 +172,25 @@ class PlaceholderAPIIml private constructor(
         }
     }
 
-    @Suppress("UNCHECKED_CAST")
     override fun getValue(
         key: String,
         visitor: PlayerRef?,
         defaultValue: String?,
         params: PlaceholderParameters,
         vararg contexts: AnyContext
-    ): String {
+    ): Message {
         if (contexts.isEmpty()) {
-            return key
+            return Message.raw(key)
         }
 
         val ref = Ref.ObjectRef<AnyContext>()
 
         //TODO: placeholder as a parameter (calculate nested placeholders)
-        getPlaceholder(key, contexts as Array<AnyContext>, ref)?.let {
+        getPlaceholder(key, contexts, ref)?.let {
             return it.getValue(params, ref.element, visitor)
         }
 
-        return key
+        return Message.raw(key)
     }
 
 
@@ -197,19 +199,110 @@ class PlaceholderAPIIml private constructor(
         visitor: PlayerRef?,
         matched: Collection<MatchedGroup>,
         vararg contexts: AnyContext
-    ): String {
-        val builder = StringBuilder(input)
-
-        var lengthDiff = 0
-
-        matched.forEach { group ->
-            val replacement = getValue(group.value, visitor, null, group.params, *contexts)
-
-            builder.replace(lengthDiff + group.start, lengthDiff + group.end, replacement)
-            lengthDiff += replacement.length - (group.end - group.start)
+    ): Message {
+        if (matched.isEmpty()) {
+            return Message.raw(input)
         }
 
-        return builder.toString()
+        val messages = mutableListOf<Message>()
+        var lastIndex = 0
+
+        matched.forEach { group ->
+            if (group.start > lastIndex) {
+                messages.add(Message.raw(input.substring(lastIndex, group.start)))
+            }
+            lastIndex = group.end
+
+            messages.add(getValue(group.value, visitor, null, group.params, *contexts))
+        }
+
+        if (lastIndex < input.length) {
+            messages.add(Message.raw(input.substring(lastIndex, input.length)))
+        }
+
+        return when (messages.size) {
+            0 -> Message.raw("")
+            1 -> messages[0]
+            else -> Message.join(*messages.toTypedArray())
+        }
+    }
+
+    override fun translateMessage(
+        input: String,
+        visitor: PlayerRef?,
+        matched: Collection<MatchedGroup>,
+        vararg contexts: AnyContext
+    ): Message {
+        if (matched.isEmpty()) {
+            return Message.raw(input)
+        }
+
+        val messages = mutableListOf<Message>()
+        val color = Ref.ObjectRef<String>()
+        val activeStyles = mutableMapOf<KClass<out MessageStyle>, MessageStyle>()
+        val builder = StringBuilder()
+        var lastIndex = 0
+
+        fun applyActiveAttrs(msg: Message) {
+            color.element?.let { msg.color(it) }
+            activeStyles.values.forEach { it.applyTo(msg) }
+        }
+
+        fun flushSegment() {
+            if (builder.isNotEmpty()) {
+                val msg = Message.raw(builder.toString())
+                applyActiveAttrs(msg)
+                messages.add(msg)
+                builder.clear()
+            }
+        }
+
+        matched.forEach { group ->
+            if (group.start > lastIndex) {
+                builder.append(input, lastIndex, group.start)
+            }
+            lastIndex = group.end
+
+            val placeholderContext = Ref.ObjectRef<AnyContext>()
+            val placeholder = getPlaceholder(group.value, contexts, placeholderContext)
+
+            if (placeholder != null) {
+                val directValue = placeholder.getDirectValue(group.params, placeholderContext.element, visitor)
+
+                when (directValue) {
+                    is MessageColor -> {
+                        flushSegment()
+                        color.element = directValue.hex
+                    }
+
+                    is MessageStyle -> {
+                        flushSegment()
+                        activeStyles[directValue::class] = directValue
+                    }
+
+                    else -> {
+                        flushSegment()
+                        val value = placeholder.getValue(group.params, placeholderContext.element, visitor)
+                        applyActiveAttrs(value)
+                        messages.add(value)
+                    }
+                }
+            } else {
+                builder.append(input, group.start, group.end)
+            }
+        }
+
+        if (lastIndex < input.length) {
+            builder.append(input, lastIndex, input.length)
+        }
+
+        flushSegment()
+
+        return when (messages.size) {
+            0 -> Message.raw("")
+            1 -> messages[0]
+            else -> Message.join(*messages.toTypedArray())
+        }
     }
 
     override fun findPlaceholders(matched: Collection<MatchedGroup>, scope: AnyScope): List<AnyPlaceholder> {
@@ -226,7 +319,7 @@ class PlaceholderAPIIml private constructor(
 
     private fun getPlaceholder(
         key: String,
-        contexts: Array<AnyContext>,
+        contexts: Array<out AnyContext>,
         placeholderContext: Ref.ObjectRef<AnyContext>
     ): AnyPlaceholder? {
         if (contexts.isEmpty()) {
@@ -310,22 +403,22 @@ class PlaceholderAPIIml private constructor(
 
     override fun formatTime(millis: Long) = millis.formatAsTime(configuration.timeFormat)
 
-    override fun formatObject(value: Any?): String {
+    override fun formatObject(value: Any?): Message {
         if (value == null) {
-            return "null"
+            return Message.raw("null")
         }
 
         return getFormatter(value::class)(value)
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : Any> registerFormatter(clazz: KClass<T>, formatFun: (T) -> String) {
+    override fun <T : Any> registerFormatter(clazz: KClass<T>, formatFun: (T) -> Message) {
         formatters[clazz] = format@{
             it?.let {
                 return@format formatFun(it as T)
             }
 
-            return@format "null"
+            return@format Message.raw("null")
         }
     }
 
@@ -346,32 +439,42 @@ class PlaceholderAPIIml private constructor(
             }
         }
 
-        return formatter ?: { it.toString() }
+        return formatter ?: { Message.raw(it.toString()) }
     }
 
     private fun registerDefaultFormatters() {
-        registerFormatter(Boolean::class) {
+        registerStringFormatter(Boolean::class) {
             it.toFormatString()
         }
-        registerFormatter(Date::class) {
+        registerStringFormatter(Date::class) {
             formatDate(it)
         }
-        registerFormatter(Iterable::class) {
+        registerStringFormatter(Iterable::class) {
             it.joinToString(configuration.arraySeparator)
         }
-        registerFormatter(Array<Any?>::class) {
+        registerStringFormatter(Array<Any?>::class) {
             it.joinToString(configuration.arraySeparator)
         }
         registerFormatter(PlayerRef::class) {
             it.reference?.let { ref ->
-                ref.store.getComponent(ref, Player.getComponentType())?.displayName
-            } ?: it.username
+                val displayName = ref.store.getComponent(ref, DisplayNameComponent.getComponentType())
+                displayName?.displayName
+            } ?: Message.raw(it.username)
         }
-        registerFormatter(Item::class) {
+        registerStringFormatter(Item::class) {
             it.blockId
         }
-        registerFormatter(BlockType::class) {
+        registerStringFormatter(BlockType::class) {
             it.name ?: "null"
+        }
+        registerFormatter(MessageColor::class) {
+            Message.empty().color(it.hex)
+        }
+        registerFormatter(MessageStyle::class) {
+            it.toMessage()
+        }
+        registerFormatter(Message::class) {
+            it
         }
     }
 }

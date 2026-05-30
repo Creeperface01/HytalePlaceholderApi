@@ -1,5 +1,6 @@
 package cz.creeperface.hytale.placeholderapi.placeholder
 
+import com.hypixel.hytale.server.core.Message
 import com.hypixel.hytale.server.core.universe.PlayerRef
 import cz.creeperface.hytale.placeholderapi.api.PlaceholderParameters
 import cz.creeperface.hytale.placeholderapi.api.util.*
@@ -33,15 +34,15 @@ open class VisitorSensitivePlaceholder<T : Any>(
 
     private val cache = WeakHashMap<PlayerRef, Entry<T>>()
 
-    override fun getValue(parameters: PlaceholderParameters, context: AnyContext, player: PlayerRef?): String {
+    override fun getValue(parameters: PlaceholderParameters, context: AnyContext, player: PlayerRef?): Message {
         if (player == null)
-            return name
+            return Message.raw(name)
 
         val cached = cache[player]
 
         cached?.let {
             if (updateInterval > 0 && System.currentTimeMillis() - cached.lastUpdate < intervalMillis()) {
-                return cached.value.toString()
+                return formatter(cached.value)
             } else {
                 cache.remove(player)
             }
@@ -93,9 +94,9 @@ open class VisitorSensitivePlaceholder<T : Any>(
                 AnyVisitorValueEntry(player, parameters, context)
             ) else null
 
-    override fun forceUpdate(parameters: PlaceholderParameters, context: AnyContext, player: PlayerRef?): String {
+    override fun forceUpdate(parameters: PlaceholderParameters, context: AnyContext, player: PlayerRef?): Message {
         if (player == null)
-            return name
+            return Message.raw(name)
 
         if (checkForUpdate(parameters, context, player, true)) {
             if (value != null) {
