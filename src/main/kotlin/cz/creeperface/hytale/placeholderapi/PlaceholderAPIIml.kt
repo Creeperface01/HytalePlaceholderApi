@@ -272,7 +272,8 @@ class PlaceholderAPIIml private constructor(
                 when (directValue) {
                     is MessageColor -> {
                         flushSegment()
-                        color.element = directValue.hex
+                        val hex = if (directValue.hex.startsWith('#')) directValue.hex else "#${directValue.hex}"
+                        color.element = hex
                     }
 
                     is MessageStyle -> {
@@ -468,7 +469,8 @@ class PlaceholderAPIIml private constructor(
             it.name ?: "null"
         }
         registerFormatter(MessageColor::class) {
-            Message.empty().color(it.hex)
+            val hex = if (it.hex.startsWith('#')) it.hex else "#${it.hex}"
+            Message.empty().color(hex)
         }
         registerFormatter(MessageStyle::class) {
             it.toMessage()
