@@ -109,3 +109,5 @@ hs_err_pid*
 claude
 */.gradle
 */build
+.gradle
+build
